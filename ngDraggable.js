@@ -21,7 +21,7 @@ angular.module('ngDraggable', [])
         scope.touchTimeout = 100;
 
     }])
-    .directive('ngDrag', ['$rootScope', '$parse', '$document', '$window', 'ngDraggable', function ($rootScope, $parse, $document, $window, ngDraggable) {
+    .directive('ngDrag', ['$rootScope', '$parse', '$document', '$window', 'ngDraggable', '$timeout', function ($rootScope, $parse, $document, $window, ngDraggable, $timeout) {
         return {
             restrict: 'A',
             link: function (scope, element, attrs) {
@@ -40,6 +40,8 @@ angular.module('ngDraggable', [])
                 var _dragOffset = null;
 
                 var _dragEnabled = false;
+
+                var _dragInProgress = false;
 
                 var _pressTimer = null;
 
@@ -202,6 +204,7 @@ angular.module('ngDraggable', [])
                     if (!element.hasClass('dragging')) {
                         _data = getDragData(scope);
                         element.addClass('dragging');
+                        _dragInProgress = true;
                         if (scrollContainer) {
                             _scrolled = scrollContainer.scrollTop;
                         }
@@ -267,6 +270,21 @@ angular.module('ngDraggable', [])
                         uid: _myid
                     });
                     element.removeClass('dragging');
+                    if (_dragInProgress) {
+                        // register capture phase listeners to kill click and dblclick
+                        function onclick(evt) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                            return false;
+                        }
+                        element.get(0).addEventListener("click", onclick, true);
+                        element.get(0).addEventListener("dblclick", onclick, true);
+                        $timeout(function() {
+                            element.get(0).removeEventListener("click", onclick, true);
+                            element.get(0).removeEventListener("dblclick", onclick, true);
+                        }, 100);
+                    }
+                    _dragInProgress = false;
                     element.parent().find('.drag-enter').removeClass('drag-enter');
                     reset();
                     $document.off(_moveEvents, onmove);

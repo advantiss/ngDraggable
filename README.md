@@ -1,3 +1,5 @@
+> MYN: just tinkering to disable click events on capture phase after an item is dragged.
+
 ngDraggable
 ===========
 
