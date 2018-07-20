@@ -59,6 +59,7 @@ angular.module('ngDraggable', [])
                 var onDragStopCallback = $parse(attrs.ngDragStop) || null;
                 var onDragSuccessCallback = $parse(attrs.ngDragSuccess) || null;
                 var allowTransform = angular.isDefined(attrs.allowTransform) ? scope.$eval(attrs.allowTransform) : true;
+                var dragAfterTimeout = angular.isDefined(attrs.ngDragAfterTimeout) ? scope.$eval(attrs.ngDragAfterTimeout) : null;
 
                 var getDragData = $parse(attrs.ngDragData);
 
@@ -138,13 +139,13 @@ angular.module('ngDraggable', [])
                     var useTouch = evt.type === 'touchstart';
 
 
-                    if (useTouch) {
+                    if (useTouch || dragAfterTimeout > 0) {
                         cancelPress();
                         _pressTimer = setTimeout(function () {
                             cancelPress();
                             onlongpress(evt);
                             onmove(evt);
-                        }, ngDraggable.touchTimeout);
+                        }, dragAfterTimeout ? dragAfterTimeout : ngDraggable.touchTimeout);
                         $document.on(_moveEvents, cancelPress);
                         $document.on(_releaseEvents, cancelPress);
                     } else {
